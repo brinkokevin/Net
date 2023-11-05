@@ -1,6 +1,9 @@
-local InternalRemote = require(script.Parent)
-local getIdentifier = require(script.Parent.Parent.getIdentifier)
 local Promise = require(script.Parent.Parent.Parent.Promise)
+
+local createEventGetter = require(script.Parent.Parent.createEventGetter)
+local getIdentifier = require(script.Parent.Parent.getIdentifier)
+
+local InternalRemote = require(script.Parent)
 
 local callbackIdentifierCount = 0
 local function getCallbackIdentifier()
@@ -16,13 +19,15 @@ local function getCallbackIdentifier()
 	return id
 end
 
-local function remoteEvent(name: string)
+local function remoteFunction(name: string, config: createEventGetter.Config?)
 	local id = getIdentifier(name)
+	local getEvent = createEventGetter(id, config)
 
 	return {
 		invoke = function(...)
 			local callbackId = getCallbackIdentifier()
-			local args = { callbackId, ... }
+
+			InternalRemote.send(getEvent(callbackId, ...))
 
 			return Promise.new(function(resolve, _reject, onCancel)
 				local disconnect
@@ -33,12 +38,10 @@ local function remoteEvent(name: string)
 					end
 				end)
 
-				InternalRemote.send(id, args)
-
 				onCancel(disconnect)
 			end):timeout(10)
 		end,
 	}
 end
 
-return remoteEvent
+return remoteFunction

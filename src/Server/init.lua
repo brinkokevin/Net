@@ -6,23 +6,26 @@ local spawn = require(script.Parent.spawn)
 local RemoteEvent = getSharedRemote("RemoteEvent")
 
 type Callback = (Player, ...any) -> ...any
-type EventCalls = { [string]: { { any } } }
+type EventCalls = { { any } }
 
 local outgoingMap = {} :: { [Player]: EventCalls }
 local incomingMap = {} :: { [string]: { [Callback]: true } }
 
 if RunService:IsServer() then
+	local function spawnCallbacks(callbacks, player: Player, _id: string, ...)
+		for callback in callbacks do
+			spawn(callback, player, ...)
+		end
+	end
+
 	RemoteEvent.OnServerEvent:Connect(function(player: Player, incomingCalls: EventCalls)
 		debug.profilebegin("ServerRemote.Receive")
 
-		for id, calls in incomingCalls do
+		for _, args in incomingCalls do
+			local id = args[1]
 			local callbacks = incomingMap[id]
 			if callbacks then
-				for _, args in calls do
-					for callback in callbacks do
-						spawn(callback, player, table.unpack(args))
-					end
-				end
+				spawnCallbacks(callbacks, player, table.unpack(args))
 			end
 		end
 
@@ -41,20 +44,32 @@ if RunService:IsServer() then
 	end)
 end
 
-local function send(player: Player, id: string, args: { any })
-	local playerOutgoing = outgoingMap[player]
-	if not playerOutgoing then
+local function deepFreeze(tbl)
+	table.freeze(tbl)
+
+	for _, value in tbl do
+		if type(value) == "table" then
+			deepFreeze(value)
+		end
+	end
+end
+
+local function send(player: Player, event: { any })
+	if not outgoingMap[player] then
 		outgoingMap[player] = {}
-		playerOutgoing = outgoingMap[player]
 	end
 
-	local eventOutgoing = playerOutgoing[id]
-	if not eventOutgoing then
-		playerOutgoing[id] = {}
-		eventOutgoing = playerOutgoing[id]
+	-- Tables are frozen in dev mode to throw errors on accidental mutation
+	-- If you need to mutate a table send a deep copy instead or enable shouldCopyData remote in config
+	if _G.__DEV__ then
+		for _, value in event do
+			if type(value) == "table" then
+				deepFreeze(value)
+			end
+		end
 	end
 
-	table.insert(eventOutgoing, args)
+	table.insert(outgoingMap[player], event)
 end
 
 local function receive(id: string, callback: Callback)

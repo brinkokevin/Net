@@ -1,0 +1,33 @@
+{
+	"name": "net",
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"$ignoreUnknownInstances": true,
+			"Net": {
+				"$path": "src"
+			},
+			"_Index": {
+				"$path": "Packages/_Index"
+			},
+			"Promise": {
+				"$path": "Packages/Promise.lua"
+			}
+		},
+		"ServerScriptService": {
+			"$ignoreUnknownInstances": true,
+			"NetTest": {
+				"$path": "test/NetTest.server.lua"
+			}
+		},
+		"StarterPlayer": {
+			"$ignoreUnknownInstances": true,
+			"StarterPlayerScripts": {
+				"$ignoreUnknownInstances": true,
+				"NetTest": {
+					"$path": "test/NetTest.client.lua"
+				}
+			}
+		}
+	}
+}

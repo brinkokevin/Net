@@ -6,14 +6,17 @@ local spawn = require(script.Parent.spawn)
 local RemoteEvent = getSharedRemote("RemoteEvent")
 
 type Callback = (...any) -> ...any
-type EventCalls = { [string]: { { any } } }
+type EventCalls = { { any } }
 
-local outgoingMap = {} :: EventCalls
-local incomingMap = {} :: { [string]: { [Callback]: true } }
-local deferedCalls = {} :: {
-	receiveTime: number,
-	calls: EventCalls,
-}
+local outgoingEvents: EventCalls = {}
+local incomingCallbacks: { [string]: { [Callback]: true } } = {}
+
+local deferedEvents: {
+	[string]: {
+		receiveTime: number,
+		events: { { any } },
+	},
+} = {}
 
 local function getName(id: string)
 	for name, remoteId in RemoteEvent:GetAttributes() do
@@ -25,27 +28,28 @@ local function getName(id: string)
 	return nil
 end
 
+local function spawnCallbacks(callbacks, _id: string, ...)
+	for callback in callbacks do
+		spawn(callback, ...)
+	end
+end
+
 if RunService:IsClient() then
-	RemoteEvent.OnClientEvent:Connect(function(incomingCalls: EventCalls)
+	RemoteEvent.OnClientEvent:Connect(function(incomingEvents: EventCalls)
 		debug.profilebegin("ClientRemote.Receive")
 
-		for id, calls in incomingCalls do
-			local callbacks = incomingMap[id]
+		for _, event in incomingEvents do
+			local id = event[1]
+			local callbacks = incomingCallbacks[id]
 			if callbacks then
-				for _, args in calls do
-					for callback in callbacks do
-						spawn(callback, table.unpack(args))
-					end
-				end
+				spawnCallbacks(callbacks, table.unpack(event))
 			else
-				if deferedCalls[id] then
-					for _, args in calls do
-						table.insert(deferedCalls[id].calls, args)
-					end
+				if deferedEvents[id] then
+					table.insert(deferedEvents[id].events, event)
 				else
-					deferedCalls[id] = {
+					deferedEvents[id] = {
 						receiveTime = os.clock(),
-						calls = calls,
+						events = { event },
 					}
 				end
 			end
@@ -57,24 +61,15 @@ if RunService:IsClient() then
 	RunService.PostSimulation:Connect(function()
 		debug.profilebegin("ClientRemote.Send")
 
-		if next(outgoingMap) then
-			RemoteEvent:FireServer(outgoingMap)
-			table.clear(outgoingMap)
+		if next(outgoingEvents) then
+			RemoteEvent:FireServer(outgoingEvents)
+			table.clear(outgoingEvents)
 		end
 
-		for id, defered in deferedCalls do
-			local callbacks = incomingMap[id]
-			if callbacks then
-				for _, args in defered.calls do
-					for callback in callbacks do
-						spawn(callback, table.unpack(args))
-					end
-				end
-
-				deferedCalls[id] = nil
-			elseif os.clock() - defered.receiveTime > 30 then
+		for id, defered in deferedEvents do
+			if os.clock() - defered.receiveTime > 30 then
 				warn("RemoteEvent", getName(id) or id, "has no callback registered and has been dropped")
-				deferedCalls[id] = nil
+				deferedEvents[id] = nil
 			end
 		end
 
@@ -82,29 +77,59 @@ if RunService:IsClient() then
 	end)
 end
 
-local function send(id: string, args: { any })
-	if not outgoingMap[id] then
-		outgoingMap[id] = {}
+local function deepFreeze(tbl)
+	table.freeze(tbl)
+
+	for _, value in tbl do
+		if type(value) == "table" then
+			deepFreeze(value)
+		end
+	end
+end
+
+local function send(event)
+	-- Tables are frozen in dev mode to throw errors on accidental mutation
+	-- If you need to mutate a table send a deep copy instead or enable shouldCopyData remote in config
+	if _G.__DEV__ then
+		for _, value in event do
+			if type(value) == "table" then
+				deepFreeze(value)
+			end
+		end
 	end
 
-	table.insert(outgoingMap[id], args)
+	table.insert(outgoingEvents, event)
 end
 
 local function receive(id: string, callback: Callback)
-	if incomingMap[id] then
-		if incomingMap[id][callback] then
+	if incomingCallbacks[id] then
+		if incomingCallbacks[id][callback] then
 			error("This callback is already registered")
 		end
 
-		incomingMap[id][callback] = true
+		incomingCallbacks[id][callback] = true
 	else
-		incomingMap[id] = { [callback] = true }
+		incomingCallbacks[id] = { [callback] = true }
+	end
+
+	-- "Deferred events" refer to the events that the client receives prior to the registration of a callback.
+	-- These events are not immediately invoked but are deferred to ensure that all other potential callbacks
+	-- have an opportunity to register before these events are called.
+	if deferedEvents[id] then
+		local events = deferedEvents[id].events
+		deferedEvents[id] = nil
+
+		task.defer(function()
+			for _, args in events do
+				spawnCallbacks(incomingCallbacks[id], table.unpack(args))
+			end
+		end)
 	end
 
 	return function()
-		incomingMap[id][callback] = nil
-		if not next(incomingMap[id]) then
-			incomingMap[id] = nil
+		incomingCallbacks[id][callback] = nil
+		if not next(incomingCallbacks[id]) then
+			incomingCallbacks[id] = nil
 		end
 	end
 end

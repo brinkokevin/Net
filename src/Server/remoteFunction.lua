@@ -4,7 +4,7 @@ local InternalRemote = require(script.Parent)
 
 local registeredCallbacks = {}
 
-local function remoteEvent(name: string)
+local function remoteFunction(name: string)
 	local id = getIdentifier(name)
 
 	return {
@@ -15,7 +15,7 @@ local function remoteEvent(name: string)
 			registeredCallbacks[name] = true
 
 			local disconnect = InternalRemote.receive(id, function(player: Player, callbackId: string, ...)
-				InternalRemote.send(player, id, { callbackId, callback(player, ...) })
+				InternalRemote.send(player, { id, callbackId, callback(player, ...) })
 			end)
 
 			return function()
@@ -26,4 +26,4 @@ local function remoteEvent(name: string)
 	}
 end
 
-return remoteEvent
+return remoteFunction
