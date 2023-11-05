@@ -1,0 +1,11 @@
+[package]
+name = "brinkokevin/net"
+version = "0.1.3"
+license = "MIT"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+exclude = ["**"]
+include = ["src", "src/**", "wally.toml", "wally.lock", "default.project.json"]
+
+[dependencies]
+Promise = "evaera/promise@^4"
