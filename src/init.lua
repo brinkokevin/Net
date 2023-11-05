@@ -1,10 +1,10 @@
 return {
 	Client = {
-		RemoteEvent = require(script.Client.RemoteEvent),
-		RemoteFunction = require(script.Client.RemoteFunction),
+		remoteEvent = require(script.Client.remoteEvent),
+		remoteFunction = require(script.Client.remoteFunction),
 	},
 	Server = {
-		RemoteEvent = require(script.Server.RemoteEvent),
-		RemoteFunction = require(script.Server.RemoteFunction),
+		remoteEvent = require(script.Server.remoteEvent),
+		remoteFunction = require(script.Server.remoteFunction),
 	},
 }
