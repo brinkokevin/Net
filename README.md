@@ -5,7 +5,7 @@ Another net module
 ```lua
 local Net = require(game.ReplicatedStorage.Packages.Net)
 
-local myServerRemote = Net.Server.RemoteEvent("MyRemote")
+local myServerRemote = Net.Server.remoteEvent("MyRemote")
 
 myServerRemote.onServerEvent(function(player, message)
     print(player, message)
@@ -18,7 +18,7 @@ myServerRemote.fire(game.Players.brinkokevin, "Hello World")
 ```lua
 local Net = require(game.ReplicatedStorage.Packages.Net)
 
-local myClientRemote = Net.Client.RemoteEvent("MyRemote")
+local myClientRemote = Net.Client.remoteEvent("MyRemote")
 
 myClientRemote.onClientEvent(function(message)
     print(message)
