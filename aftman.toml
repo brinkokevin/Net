@@ -3,11 +3,8 @@
 
 # To add a new tool, add an entry to this table.
 [tools]
-mantle = "blake-mealey/mantle@0.11.10"
 wally = "UpliftGames/wally@0.3.2"
 selene = "Kampfkarren/selene@0.25.0"
-lune = "filiptibell/lune@0.7.10"
 rojo = "rojo-rbx/rojo@7.4.0-rc3"
 stylua = "johnnymorganz/stylua@0.18.2"
 wally-package-types = "JohnnyMorganz/wally-package-types@1.2.1"
-darklua = "seaofvoices/darklua@0.11.1"

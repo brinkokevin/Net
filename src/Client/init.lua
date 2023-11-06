@@ -77,27 +77,7 @@ if RunService:IsClient() then
 	end)
 end
 
-local function deepFreeze(tbl)
-	table.freeze(tbl)
-
-	for _, value in tbl do
-		if type(value) == "table" then
-			deepFreeze(value)
-		end
-	end
-end
-
 local function send(event)
-	-- Tables are frozen in dev mode to throw errors on accidental mutation
-	-- If you need to mutate a table send a deep copy instead or enable shouldCopyData remote in config
-	if _G.__DEV__ then
-		for _, value in event do
-			if type(value) == "table" then
-				deepFreeze(value)
-			end
-		end
-	end
-
 	table.insert(outgoingEvents, event)
 end
 
