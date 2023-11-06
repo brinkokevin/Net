@@ -27,8 +27,8 @@ myServerRemote.onServerEvent(function(player, message)
     print(player, message)
 end)
 
-myServerRemote.fireAll("Hello World")
-myServerRemote.fire(game.Players.brinkokevin, "Hello World")
+myServerRemote.sendToAllPlayers("Hello World")
+myServerRemote.sendToPlayer(game.Players.brinkokevin, "Hello World")
 ```
 
 ```lua
@@ -40,7 +40,7 @@ myClientRemote.onClientEvent(function(message)
     print(message)
 end)
 
-myClientRemote.fire("Hello World")
+myClientRemote.sendToServer("Hello World")
 ```
 
 ## Install

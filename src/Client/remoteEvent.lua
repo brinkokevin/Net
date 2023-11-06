@@ -8,7 +8,7 @@ local function remoteEvent(name: string, config: createEventGetter.Config?)
 	local getEvent = createEventGetter(id, config)
 
 	return {
-		fire = function(...)
+		sendToServer = function(...)
 			InternalRemote.send(getEvent(...))
 		end,
 		onClientEvent = function(callback)

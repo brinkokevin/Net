@@ -24,7 +24,7 @@ local function remoteFunction(name: string, config: createEventGetter.Config?)
 	local getEvent = createEventGetter(id, config)
 
 	return {
-		invoke = function(...)
+		callServerAsync = function(...)
 			local callbackId = getCallbackIdentifier()
 
 			InternalRemote.send(getEvent(callbackId, ...))

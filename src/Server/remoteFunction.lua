@@ -8,7 +8,7 @@ local function remoteFunction(name: string)
 	local id = getIdentifier(name)
 
 	return {
-		onInvoke = function(callback)
+		setServerCallback = function(callback)
 			if registeredCallbacks[name] then
 				error("RemoteFunction " .. name .. " already has a callback registered")
 			end

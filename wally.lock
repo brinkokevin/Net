@@ -4,7 +4,7 @@ registry = "test"
 
 [[package]]
 name = "brinkokevin/net"
-version = "0.1.5"
+version = "0.2.0"
 dependencies = [["Promise", "evaera/promise@4.0.0"]]
 
 [[package]]

@@ -14,4 +14,4 @@ end)
 
 task.wait(2)
 
-myServerRemote.fireAll("Hello from server to everyone!")
+myServerRemote.sendToAllPlayers("Hello from server to everyone!")
