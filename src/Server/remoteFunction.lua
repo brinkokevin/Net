@@ -15,7 +15,15 @@ local function remoteFunction(name: string)
 			registeredCallbacks[name] = true
 
 			local disconnect = InternalRemote.receive(id, function(player: Player, callbackId: string, ...)
-				InternalRemote.send(player, { id, callbackId, callback(player, ...) })
+				local event = { id, callbackId, callback(player, ...) }
+
+				if _G.__DEV__ then
+					if type(event[3]) ~= "boolean" then
+						error("RemoteFunction " .. name .. " must return boolean for success as first argument")
+					end
+				end
+
+				InternalRemote.send(player, event)
 			end)
 
 			return function()
