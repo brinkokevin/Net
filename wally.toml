@@ -9,3 +9,4 @@ include = ["src", "src/**", "wally.toml", "wally.lock", "default.project.json"]
 
 [dependencies]
 Promise = "evaera/promise@^4"
+Signal = "sleitnick/signal@^2"

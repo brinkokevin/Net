@@ -1,7 +1,7 @@
 local RunService = game:GetService("RunService")
 
 local getSharedRemote = require(script.Parent.getSharedRemote)
-local spawn = require(script.Parent.spawn)
+local Signal = require(script.Parent.Parent.Signal)
 
 local RemoteEvent = getSharedRemote("RemoteEvent")
 
@@ -9,7 +9,7 @@ type Callback = (...any) -> ...any
 type EventCalls = { { any } }
 
 local outgoingEvents: EventCalls = {}
-local incomingCallbacks: { [string]: { [Callback]: true } } = {}
+local incomingCallbacks: { [string]: Signal.Signal<Callback> } = {}
 
 local deferedEvents: {
 	[string]: {
@@ -28,12 +28,6 @@ local function getName(id: string)
 	return nil
 end
 
-local function spawnCallbacks(callbacks, _id: string, ...)
-	for callback in callbacks do
-		spawn(callback, ...)
-	end
-end
-
 if RunService:IsClient() then
 	RemoteEvent.OnClientEvent:Connect(function(incomingEvents: EventCalls)
 		debug.profilebegin("ClientRemote.Receive")
@@ -42,7 +36,7 @@ if RunService:IsClient() then
 			local id = event[1]
 			local callbacks = incomingCallbacks[id]
 			if callbacks then
-				spawnCallbacks(callbacks, table.unpack(event))
+				callbacks:Fire(table.unpack(event, 2))
 			else
 				if deferedEvents[id] then
 					table.insert(deferedEvents[id].events, event)
@@ -82,15 +76,11 @@ local function send(event)
 end
 
 local function receive(id: string, callback: Callback)
-	if incomingCallbacks[id] then
-		if incomingCallbacks[id][callback] then
-			error("This callback is already registered")
-		end
-
-		incomingCallbacks[id][callback] = true
-	else
-		incomingCallbacks[id] = { [callback] = true }
+	if not incomingCallbacks[id] then
+		incomingCallbacks[id] = Signal.new()
 	end
+
+	local connection = incomingCallbacks[id]:Connect(callback)
 
 	-- "Deferred events" refer to the events that the client receives prior to the registration of a callback.
 	-- These events are not immediately invoked but are deferred to ensure that all other potential callbacks
@@ -99,19 +89,12 @@ local function receive(id: string, callback: Callback)
 		local events = deferedEvents[id].events
 		deferedEvents[id] = nil
 
-		task.defer(function()
-			for _, args in events do
-				spawnCallbacks(incomingCallbacks[id], table.unpack(args))
-			end
-		end)
-	end
-
-	return function()
-		incomingCallbacks[id][callback] = nil
-		if not next(incomingCallbacks[id]) then
-			incomingCallbacks[id] = nil
+		for _, args in events do
+			incomingCallbacks[id]:FireDeferred(table.unpack(args, 2))
 		end
 	end
+
+	return connection
 end
 
 return {

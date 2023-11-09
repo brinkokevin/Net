@@ -14,7 +14,7 @@ local function remoteFunction(name: string)
 			end
 			registeredCallbacks[name] = true
 
-			local disconnect = InternalRemote.receive(id, function(player: Player, callbackId: string, ...)
+			local connection = InternalRemote.receive(id, function(player: Player, callbackId: string, ...)
 				local event = { id, callbackId, callback(player, ...) }
 
 				if _G.__DEV__ then
@@ -28,7 +28,7 @@ local function remoteFunction(name: string)
 
 			return function()
 				registeredCallbacks[name] = nil
-				disconnect()
+				connection:Disconnect()
 			end
 		end,
 	}
