@@ -9,7 +9,7 @@ myServerRemote.onServerEvent(function(player: Player, message)
 end)
 
 game.Players.PlayerAdded:Connect(function(player)
-	myServerRemote.fire(player, "Hello from server!")
+	myServerRemote.sendToPlayer(player, "Hello from server!")
 end)
 
 task.wait(2)

@@ -8,4 +8,4 @@ myClientRemote.onClientEvent(function(message)
 	print(`Server: {message}`)
 end)
 
-myClientRemote.fire("Hello!")
+myClientRemote.sendToServer("Hello!")

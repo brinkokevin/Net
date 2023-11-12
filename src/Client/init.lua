@@ -18,7 +18,7 @@ local deferedEvents: {
 	},
 } = {}
 
-local function getName(id: string)
+local function getName(id: string): string?
 	for name, remoteId in RemoteEvent:GetAttributes() do
 		if remoteId == id then
 			return name

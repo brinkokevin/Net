@@ -1,6 +1,6 @@
 [package]
 name = "brinkokevin/net"
-version = "0.2.2"
+version = "0.2.3"
 license = "MIT"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"

@@ -5,11 +5,10 @@ local getSharedRemote = require(script.Parent.getSharedRemote)
 
 local RemoteEvent = getSharedRemote("RemoteEvent")
 
-type Callback = (Player, ...any) -> ...any
 type EventCalls = { { any } }
 
 local outgoingMap = {} :: { [Player]: EventCalls }
-local incomingMap = {} :: { [string]: Signal.Signal<Callback> }
+local incomingMap = {} :: { [string]: Signal.Signal<(Player, ...any)> }
 
 if RunService:IsServer() then
 	RemoteEvent.OnServerEvent:Connect(function(player: Player, incomingCalls: EventCalls)

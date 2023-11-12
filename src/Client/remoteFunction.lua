@@ -30,10 +30,10 @@ local function remoteFunction(name: string, config: createEventGetter.Config?)
 			InternalRemote.send(getEvent(callbackId, ...))
 
 			return Promise.new(function(resolve, reject, onCancel)
-				local disconnect
-				disconnect = InternalRemote.receive(id, function(responseCallbackId: string, resolved: boolean, ...)
+				local connection
+				connection = InternalRemote.receive(id, function(responseCallbackId: string, resolved: boolean, ...)
 					if responseCallbackId == callbackId then
-						disconnect()
+						connection:Disconnect()
 
 						if resolved then
 							resolve(...)
@@ -43,7 +43,9 @@ local function remoteFunction(name: string, config: createEventGetter.Config?)
 					end
 				end)
 
-				onCancel(disconnect)
+				onCancel(function()
+					connection:Disconnect()
+				end)
 			end):timeout(10)
 		end,
 	}

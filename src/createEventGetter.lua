@@ -16,7 +16,7 @@ local function copyDeep(tbl)
 	return copy
 end
 
-local function deepFreeze(tbl)
+local function deepFreeze(tbl: { any })
 	table.freeze(tbl)
 
 	for _, value in tbl do
@@ -44,7 +44,7 @@ end
 local function createEventGetter(id: string, config: Config?)
 	local eventGetter
 	if config then
-		eventGetter = function(...)
+		eventGetter = function(...): { [number]: any }
 			local event = { id, ... }
 
 			if config.shouldCopyData then
@@ -58,7 +58,7 @@ local function createEventGetter(id: string, config: Config?)
 			return event
 		end
 	else
-		eventGetter = function(...)
+		eventGetter = function(...): { [number]: any }
 			return { id, ... }
 		end
 	end
