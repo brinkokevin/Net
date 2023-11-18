@@ -1,3 +1,4 @@
+local Types = require(script.Parent.Parent.Types)
 local Promise = require(script.Parent.Parent.Parent.Promise)
 
 local createEventGetter = require(script.Parent.Parent.createEventGetter)
@@ -19,7 +20,7 @@ local function getCallbackIdentifier()
 	return id
 end
 
-local function remoteFunction(name: string, config: createEventGetter.Config?)
+local function remoteFunction(name: string, config: Types.Config?)
 	local id = getIdentifier(name)
 	local getEvent = createEventGetter(id, config)
 

@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 
+local Types = require(script.Parent.Parent.Types)
 local InternalRemote = require(script.Parent)
 local getIdentifier = require(script.Parent.Parent.getIdentifier)
 local createEventGetter = require(script.Parent.Parent.createEventGetter)
@@ -18,7 +19,7 @@ local function assertPlayer(player: Player)
 	assert(player:IsA("Player"), "Expected Player, received " .. player.ClassName)
 end
 
-local function remoteEvent(name: string, config: createEventGetter.Config?)
+local function remoteEvent(name: string, config: Types.ServerConfig?)
 	local id = getIdentifier(name)
 	local getEvent = createEventGetter(id, config)
 
@@ -66,7 +67,18 @@ local function remoteEvent(name: string, config: createEventGetter.Config?)
 			end
 		end,
 		onServerEvent = function(callback)
-			return InternalRemote.receive(id, callback)
+			if config and config.typecheck then
+				return InternalRemote.receive(id, function(player: Player, ...)
+					local success, message = config.typecheck(...)
+					if success then
+						callback(player, ...)
+					else
+						InternalRemote.send(player, { getIdentifier("typecheck"), id, message })
+					end
+				end)
+			else
+				return InternalRemote.receive(id, callback)
+			end
 		end,
 	}
 end

@@ -2,6 +2,7 @@ local RunService = game:GetService("RunService")
 
 local getSharedRemote = require(script.Parent.getSharedRemote)
 local Signal = require(script.Parent.Parent.Signal)
+local getIdentifier = require(script.Parent.getIdentifier)
 
 local RemoteEvent = getSharedRemote("RemoteEvent")
 
@@ -96,6 +97,10 @@ local function receive(id: string, callback: Callback)
 
 	return connection
 end
+
+receive(getIdentifier("typecheck"), function(remoteId: string, message: string)
+	error(`{getName(remoteId)}: {message}`)
+end)
 
 return {
 	send = send,

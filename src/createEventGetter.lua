@@ -1,6 +1,4 @@
-export type Config = {
-	shouldCopyData: boolean?,
-}
+local Types = require(script.Parent.Types)
 
 local function copyDeep(tbl)
 	local copy = {}
@@ -41,7 +39,7 @@ local function checkDuplicateTables(tbl, seenTables)
 	end
 end
 
-local function createEventGetter(id: string, config: Config?)
+local function createEventGetter(id: string, config: Types.Config?)
 	local eventGetter
 	if config then
 		eventGetter = function(...): { [number]: any }

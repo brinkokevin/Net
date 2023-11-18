@@ -1,9 +1,10 @@
+local Types = require(script.Parent.Parent.Types)
 local getIdentifier = require(script.Parent.Parent.getIdentifier)
 local createEventGetter = require(script.Parent.Parent.createEventGetter)
 
 local InternalRemote = require(script.Parent)
 
-local function remoteEvent(name: string, config: createEventGetter.Config?)
+local function remoteEvent(name: string, config: Types.Config?)
 	local id = getIdentifier(name)
 	local getEvent = createEventGetter(id, config)
 
